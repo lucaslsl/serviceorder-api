@@ -38,9 +38,9 @@ public class Order implements Serializable{
     @JsonProperty("budget_id")
     private Long budgetId;
     
-    @Column(name="client_id")
-    @JsonProperty("client_id")
-    private Long clientId;
+    @Column(name="customer_id")
+    @JsonProperty("customer_id")
+    private Long customerId;
     
     @Column(name="subtotal")
     @JsonProperty("subtotal")
@@ -81,15 +81,13 @@ public class Order implements Serializable{
         this.budgetId = budgetId;
     }
 
-    public Long getClientId() {
-        return clientId;
+    public Long getCustomerId() {
+        return customerId;
     }
 
-    public void setClientId(Long clientId) {
-        this.clientId = clientId;
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
-    
-    
 
     public BigDecimal getSubtotal() {
         return subtotal;

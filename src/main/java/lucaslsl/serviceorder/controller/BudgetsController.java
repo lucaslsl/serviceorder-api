@@ -8,11 +8,14 @@ package lucaslsl.serviceorder.controller;
 import java.math.BigDecimal;
 import java.util.List;
 import javax.transaction.Transactional;
+import lucaslsl.serviceorder.model.BillableItem;
 import lucaslsl.serviceorder.model.Budget;
 import lucaslsl.serviceorder.model.BudgetItem;
-import lucaslsl.serviceorder.model.Client;
+import lucaslsl.serviceorder.model.Customer;
+import lucaslsl.serviceorder.repository.BillableItemRepository;
 import lucaslsl.serviceorder.repository.BudgetItemRepository;
 import lucaslsl.serviceorder.repository.BudgetRepository;
+import lucaslsl.serviceorder.repository.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -47,6 +50,12 @@ public class BudgetsController {
     @Autowired
     BudgetItemRepository budgetItemRepository;
     
+    @Autowired
+    CustomerRepository customerRepository;
+    
+    @Autowired
+    BillableItemRepository billableItemRepository;
+    
     @Transactional
     @GetMapping("api/v1/budgets/{budgetId}")
     public ResponseEntity<Budget> retrieve(@PathVariable("budgetId") Long id) {
@@ -61,14 +70,21 @@ public class BudgetsController {
     public ResponseEntity<List<Budget>> list(
             Pageable p, 
             @RequestParam(value = "deleted", required = false) Boolean deleted,
-            @RequestParam(value = "closed", required = false) Boolean closed) {
+            @RequestParam(value = "closed", required = false) Boolean closed,
+            @RequestParam(value = "customer_id", required = false) Long customerId) {
         Page<Budget> resultPage;
-        if(deleted != null && closed != null){
+        if(deleted != null && closed != null && customerId != null){
+            resultPage = budgetRepository.findByCustomerIdAndDeletedAndClosedOrderByIdDesc(p, customerId, deleted, closed);
+        }else if(deleted != null && closed != null && customerId == null){
             resultPage = budgetRepository.findByDeletedAndClosedOrderByIdDesc(p, deleted, closed);
-        }else if(deleted == null && closed != null){
+        }else if(deleted == null && closed != null && customerId == null){
             resultPage = budgetRepository.findByClosedOrderByIdDesc(p, closed);
-        }else if(deleted != null && closed == null){
+        }else if(deleted != null && closed == null && customerId == null){
             resultPage = budgetRepository.findByDeletedOrderByIdDesc(p, deleted);
+        }else if(deleted != null && closed == null && customerId != null){
+            resultPage = budgetRepository.findByCustomerIdAndDeletedOrderByIdDesc(p, customerId, deleted);
+        }else if(deleted == null && closed != null && customerId != null){
+            resultPage = budgetRepository.findByCustomerIdAndClosedOrderByIdDesc(p, customerId, closed);
         }else{
             resultPage = budgetRepository.findAllByOrderByIdDesc(p);
         }
@@ -79,6 +95,11 @@ public class BudgetsController {
     
     @PostMapping("api/v1/budgets")
     public ResponseEntity<Budget> create(@RequestBody Budget budget, UriComponentsBuilder builder) {
+        Customer customer = customerRepository.findOne(budget.getCustomerId());
+        if(customer==null){
+            return new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        
         budget.setDeleted(Boolean.FALSE);
         budget.setClosed(Boolean.FALSE);
         budget.setTotal(BigDecimal.ZERO);
@@ -124,6 +145,119 @@ public class BudgetsController {
         }
         budget.setDeleted(Boolean.TRUE);
         budgetRepository.save(budget);
+        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+    }
+    
+    @GetMapping("api/v1/budgets/{budgetId}/items/{itemId}")
+    public ResponseEntity<BudgetItem> retrieveItem(@PathVariable("budgetId") Long budgetId, @PathVariable("itemId") Long itemId) {
+        BudgetItem budgetItem = budgetItemRepository.findOneByIdAndBudgetId(itemId, budgetId);
+        if(budgetItem==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        return new ResponseEntity<BudgetItem>(budgetItem, HttpStatus.OK);
+    }
+    
+    @GetMapping("api/v1/budgets/{budgetId}/items")
+    public ResponseEntity<List<BudgetItem>> listItems(Pageable p, @PathVariable("budgetId") Long budgetId) {
+        Page<BudgetItem> resultPage = budgetItemRepository.findByBudgetIdOrderByIdDesc(p, budgetId);
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Total-Count", String.valueOf(resultPage.getTotalElements()));
+        return new ResponseEntity<List<BudgetItem>>(resultPage.getContent(), headers, HttpStatus.OK);
+    }
+    
+    @Transactional
+    @PostMapping("api/v1/budgets/{budgetId}/items")
+    public ResponseEntity<BudgetItem> createItem(@RequestBody BudgetItem budgetItem, @PathVariable("budgetId") Long budgetId, UriComponentsBuilder builder) {
+        Budget budget = budgetRepository.findOne(budgetId);
+        if(budget==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        
+        if(budget.getClosed()){
+            return new ResponseEntity(HttpStatus.CONFLICT);
+        }
+        
+        BillableItem billableItem = billableItemRepository.findOne(budgetItem.getBillableItemId());
+        if(billableItem==null){
+            return new ResponseEntity(HttpStatus.UNPROCESSABLE_ENTITY);
+        }
+        
+        budgetItem.setApproved(Boolean.FALSE);
+        budgetItem.setBudgetId(budget.getId());
+        budgetItem.setPrice(billableItem.getPrice());
+        
+        BudgetItem budgetItemCreated = budgetItemRepository.save(budgetItem);
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(builder.path("api/v1/budgets/{budgetId}/items/{itemId}").buildAndExpand(budget.getId(), budgetItemCreated.getId()).toUri());
+        return new ResponseEntity<BudgetItem>(budgetItemCreated, headers, HttpStatus.CREATED);
+            
+    }
+    
+    @Transactional
+    @PutMapping("api/v1/budgets/{budgetId}/items/{itemId}")
+    public ResponseEntity<BudgetItem> updateItem(@PathVariable("budgetId") Long budgetId, @PathVariable("itemId") Long itemId, @RequestBody BudgetItem budgetItem) {
+        Budget budget = budgetRepository.findOne(budgetId);
+        if(budget==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        
+        BudgetItem budgetItemFound = budgetItemRepository.findOne(itemId);
+        if(budgetItemFound==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        
+        if(budget.getClosed()){
+            return new ResponseEntity(HttpStatus.CONFLICT);
+        }
+        
+        budgetItemFound.setQuantity(budgetItem.getQuantity());
+        budgetItemFound.setDiscount(budgetItem.getDiscount());
+        
+        BudgetItem budgetItemSaved = budgetItemRepository.save(budgetItemFound);
+        return new ResponseEntity<BudgetItem>(budgetItemSaved, HttpStatus.OK);
+    }
+    
+    @Transactional
+    @PutMapping("api/v1/budgets/{budgetId}/items/{itemId}/approve")
+    public ResponseEntity<Void> approveItem(@PathVariable("budgetId") Long budgetId, @PathVariable("itemId") Long itemId) {
+        Budget budget = budgetRepository.findOne(budgetId);
+        if(budget==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        
+        BudgetItem budgetItem = budgetItemRepository.findOne(itemId);
+        if(budgetItem==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        
+        if(budget.getClosed()){
+            return new ResponseEntity(HttpStatus.CONFLICT);
+        }
+        
+        budgetItem.setApproved(Boolean.TRUE);
+        budgetItemRepository.save(budgetItem);
+        return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
+    }
+    
+    @Transactional
+    @DeleteMapping("api/v1/budgets/{budgetId}/items/{itemId}")
+    public ResponseEntity<Void> deleteItem(@PathVariable("budgetId") Long budgetId, @PathVariable("itemId") Long itemId) {
+        Budget budget = budgetRepository.findOne(budgetId);
+        if(budget==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        
+        BudgetItem budgetItem = budgetItemRepository.findOne(itemId);
+        if(budgetItem==null){
+            return new ResponseEntity(HttpStatus.NOT_FOUND);
+        }
+        
+        if(budget.getClosed()){
+            return new ResponseEntity(HttpStatus.CONFLICT);
+        }
+        
+        budgetItemRepository.delete(budgetItem);
         return new ResponseEntity<Void>(HttpStatus.NO_CONTENT);
     }
     

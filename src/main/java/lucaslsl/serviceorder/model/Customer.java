@@ -25,8 +25,8 @@ import org.hibernate.validator.constraints.Length;
  * @author lucaslsl
  */
 @Entity
-@Table(name="client")
-public class Client implements Serializable{
+@Table(name="customer")
+public class Customer implements Serializable{
     private static final long serialVersionUID = 1L;
     
     @Id
@@ -138,7 +138,7 @@ public class Client implements Serializable{
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final Client other = (Client) obj;
+        final Customer other = (Customer) obj;
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }

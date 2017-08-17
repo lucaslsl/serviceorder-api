@@ -24,6 +24,6 @@ public interface OrderRepository extends PagingAndSortingRepository<Order, Long>
     
     Page<Order> findByBudgetIdOrderByIdDesc(Pageable pageable, Long budgetId);
     
-    Page<Order> findByClientIdOrderByIdDesc(Pageable pageable, Long clientId);
+    Page<Order> findByCustomerIdOrderByIdDesc(Pageable pageable, Long customerId);
     
 }

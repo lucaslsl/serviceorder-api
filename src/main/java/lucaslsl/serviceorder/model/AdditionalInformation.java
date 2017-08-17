@@ -34,7 +34,7 @@ public class AdditionalInformation implements Serializable{
     @JsonProperty("id")
     private Long id;
     
-    @Column(name="paranet_type")
+    @Column(name="parent_type")
     @JsonProperty("parent_type")
     @Length(max=60)
     private String parentType;
@@ -43,12 +43,12 @@ public class AdditionalInformation implements Serializable{
     @JsonProperty("parent_id")
     private Long parentId;
     
-    @Column(name="key")
+    @Column(name="`key`")
     @JsonProperty("key")
     @Length(max=30)
     private String key;
     
-    @Column(name="value")
+    @Column(name="`value`")
     @JsonProperty("value")
     @Length(max=255)
     private String value;

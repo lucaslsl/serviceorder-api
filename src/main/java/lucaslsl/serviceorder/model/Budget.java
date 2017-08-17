@@ -34,9 +34,9 @@ public class Budget implements Serializable{
     @JsonProperty("id")
     private Long id;
     
-    @Column(name="client_id")
-    @JsonProperty("client_id")
-    private Long clientId;
+    @Column(name="customer_id")
+    @JsonProperty("customer_id")
+    private Long customerId;
     
     @Column(name="total")
     @JsonProperty("total")
@@ -68,13 +68,14 @@ public class Budget implements Serializable{
         this.id = id;
     }
 
-    public Long getClientId() {
-        return clientId;
+    public Long getCustomerId() {
+        return customerId;
     }
 
-    public void setClientId(Long clientId) {
-        this.clientId = clientId;
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
+
 
     public BigDecimal getTotal() {
         return total;

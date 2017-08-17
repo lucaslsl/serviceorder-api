@@ -53,13 +53,15 @@ public class OrdersController {
     @GetMapping("api/v1/orders")
     public ResponseEntity<List<Order>> list(
             Pageable p,
-            @RequestParam(value = "clientId", required = false) Long clientId,
+            @RequestParam(value = "customerId", required = false) Long customerId,
             @RequestParam(value = "budgetId", required = false) Long budgetId) {
         
         Page<Order> resultPage;
         
-        if(clientId != null){
-            resultPage = orderRepository.findByClientIdOrderByIdDesc(p, clientId);
+        if(customerId != null){
+            resultPage = orderRepository.findByCustomerIdOrderByIdDesc(p, customerId);
+        }else if(budgetId != null){
+            resultPage = orderRepository.findByBudgetIdOrderByIdDesc(p, budgetId);
         }else{
             resultPage = orderRepository.findAllByOrderByIdDesc(p);
         }
@@ -83,7 +85,7 @@ public class OrdersController {
             return new ResponseEntity(HttpStatus.CONFLICT);
         }
         
-        order.setClientId(budget.getClientId());
+        order.setCustomerId(budget.getCustomerId());
         order.setSubtotal(budget.getTotal());
                 
         Order orderCreated = orderRepository.save(order);

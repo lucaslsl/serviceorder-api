@@ -5,7 +5,7 @@
  */
 package lucaslsl.serviceorder.repository;
 
-import lucaslsl.serviceorder.model.ClientAddress;
+import lucaslsl.serviceorder.model.CustomerAddress;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
@@ -14,8 +14,10 @@ import org.springframework.data.repository.PagingAndSortingRepository;
  *
  * @author lucaslsl
  */
-public interface ClientAddressRepository extends PagingAndSortingRepository<ClientAddress, Long>{
+public interface CustomerAddressRepository extends PagingAndSortingRepository<CustomerAddress, Long>{
     
-    Page<ClientAddress> findByClientIdOrderByIdDesc(Pageable pageable, Long clientId);
+    CustomerAddress findOneByIdAndCustomerId(Long id, Long customerId);
+    
+    Page<CustomerAddress> findByCustomerIdOrderByIdDesc(Pageable pageable, Long customerId);
     
 }

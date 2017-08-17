@@ -26,6 +26,12 @@ public interface BudgetRepository extends PagingAndSortingRepository<Budget, Lon
     
     Page<Budget> findByDeletedAndClosedOrderByIdDesc(Pageable pageable, Boolean deleted, Boolean closed);
     
-    Page<Budget> findByClientIdOrderByIdDesc(Pageable pageable, Long clientId);
+    Page<Budget> findByCustomerIdOrderByIdDesc(Pageable pageable, Long customerId);
+    
+    Page<Budget> findByCustomerIdAndClosedOrderByIdDesc(Pageable pageable, Long customerId, Boolean closed);
+    
+    Page<Budget> findByCustomerIdAndDeletedOrderByIdDesc(Pageable pageable, Long customerId, Boolean deleted);
+    
+    Page<Budget> findByCustomerIdAndDeletedAndClosedOrderByIdDesc(Pageable pageable, Long customerId, Boolean deleted, Boolean closed);
     
 }

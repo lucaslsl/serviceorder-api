@@ -18,4 +18,6 @@ public interface AdditionalInformationRepository extends PagingAndSortingReposit
     
     Page<AdditionalInformation> findByParentTypeAndParentId(Pageable pageable, String parentType, Long parentId);
     
+    AdditionalInformation findOneByIdAndParentTypeAndParentId(Long id, String parentType, Long parentId);
+    
 }

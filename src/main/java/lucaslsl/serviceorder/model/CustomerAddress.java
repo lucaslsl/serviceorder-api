@@ -24,8 +24,8 @@ import org.hibernate.validator.constraints.Length;
  * @author lucaslsl
  */
 @Entity
-@Table(name="client_address")
-public class ClientAddress implements Serializable{
+@Table(name="customer_address")
+public class CustomerAddress implements Serializable{
     private static final long serialVersionUID = 1L;
     
     @Id
@@ -34,9 +34,9 @@ public class ClientAddress implements Serializable{
     @JsonProperty("id")
     private Long id;
     
-    @Column(name="client_id")
-    @JsonProperty("client_id")
-    private Long clientId;
+    @Column(name="customer_id")
+    @JsonProperty("customer_id")
+    private Long customerId;
     
     @Column(name="formatted_address")
     @JsonProperty("formatted_address")
@@ -76,13 +76,14 @@ public class ClientAddress implements Serializable{
         this.id = id;
     }
 
-    public Long getClientId() {
-        return clientId;
+    public Long getCustomerId() {
+        return customerId;
     }
 
-    public void setClientId(Long clientId) {
-        this.clientId = clientId;
+    public void setCustomerId(Long customerId) {
+        this.customerId = customerId;
     }
+
 
     public String getFormattedAddress() {
         return formattedAddress;
@@ -150,7 +151,7 @@ public class ClientAddress implements Serializable{
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final ClientAddress other = (ClientAddress) obj;
+        final CustomerAddress other = (CustomerAddress) obj;
         if (!Objects.equals(this.id, other.id)) {
             return false;
         }
