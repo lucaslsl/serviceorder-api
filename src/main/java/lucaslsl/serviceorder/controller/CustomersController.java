@@ -64,14 +64,14 @@ public class CustomersController {
             @RequestParam(value = "national_registration_number", required = false) String nationalRegistrationNumber) {
         
         Page<Customer> resultPage;
-        if(deleted != null && juridical != null){
+        if(deleted != null && juridical != null && nationalRegistrationNumber == null){
             resultPage = customerRepository.findByDeletedAndJuridicalOrderByIdDesc(p, deleted, juridical);
-        }else if(deleted == null && juridical != null){
+        }else if(deleted == null && juridical != null && nationalRegistrationNumber == null){
             resultPage = customerRepository.findByJuridicalOrderByIdDesc(p, juridical);
-        }else if(deleted != null && juridical == null){
+        }else if(deleted != null && juridical == null && nationalRegistrationNumber == null){
             resultPage = customerRepository.findByDeletedOrderByIdDesc(p, deleted);
-        }else if(nationalRegistrationNumber != null){
-            resultPage = customerRepository.findByNationalRegistrationNumber(p, nationalRegistrationNumber);
+        }else if(nationalRegistrationNumber != null && deleted != null){
+            resultPage = customerRepository.findByNationalRegistrationNumberAndDeletedOrderByIdDesc(p, nationalRegistrationNumber, deleted);
         }else{
             resultPage = customerRepository.findAllByOrderByIdDesc(p);
         }

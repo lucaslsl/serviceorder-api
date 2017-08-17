@@ -22,6 +22,8 @@ public interface CustomerRepository extends PagingAndSortingRepository<Customer,
     
     Page<Customer> findByNationalRegistrationNumber(Pageable pageable, String nationalRegistrationNumber);
     
+    Page<Customer> findByNationalRegistrationNumberAndDeletedOrderByIdDesc(Pageable pageable, String nationalRegistrationNumber, Boolean deleted);
+    
     Page<Customer> findByDeletedOrderByIdDesc(Pageable pageable, Boolean deleted);
     
     Page<Customer> findByJuridicalOrderByIdDesc(Pageable pageable, Boolean juridical);
