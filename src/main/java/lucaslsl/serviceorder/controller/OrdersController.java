@@ -53,8 +53,8 @@ public class OrdersController {
     @GetMapping("api/v1/orders")
     public ResponseEntity<List<Order>> list(
             Pageable p,
-            @RequestParam(value = "customerId", required = false) Long customerId,
-            @RequestParam(value = "budgetId", required = false) Long budgetId) {
+            @RequestParam(value = "customer_id", required = false) Long customerId,
+            @RequestParam(value = "budget_id", required = false) Long budgetId) {
         
         Page<Order> resultPage;
         

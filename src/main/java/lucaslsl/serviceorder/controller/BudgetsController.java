@@ -112,7 +112,7 @@ public class BudgetsController {
     
     @Transactional
     @PutMapping("api/v1/budgets/{budgetId}/close")
-    public ResponseEntity<Void> update(@PathVariable("budgetId") Long id) {
+    public ResponseEntity<Void> close(@PathVariable("budgetId") Long id) {
         Budget budget = budgetRepository.findOne(id);
         if(budget==null){
             return new ResponseEntity(HttpStatus.NOT_FOUND);
