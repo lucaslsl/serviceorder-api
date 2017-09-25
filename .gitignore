@@ -48,3 +48,4 @@ config/keys.js
 coverage
 
 target
+nbactions.xml

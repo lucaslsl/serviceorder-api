@@ -1,0 +1,39 @@
+version: "2"
+services:  
+  api:
+    container_name: serviceorder_api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:mysql://serviceorder_db:3306/serviceorder
+      - SPRING_DATASOURCE_USERNAME=serviceorder
+      - SPRING_DATASOURCE_PASSWORD=serviceorder
+    ports:
+      - 8080:8080
+    networks:
+      - serviceorder_network
+    depends_on:
+      - mysql
+  mysql:
+    container_name: serviceorder_db
+    image: mysql:5.7
+    ports:
+      - 3312:3306
+    volumes:
+      - serviceorder_db_data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=serviceorder
+      - MYSQL_USER=serviceorder
+      - MYSQL_PASSWORD=serviceorder
+    networks:
+      - serviceorder_network
+  
+volumes:
+  serviceorder_db_data:
+    driver: local
+
+networks:
+  serviceorder_network:
+
